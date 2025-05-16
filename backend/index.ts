@@ -19,26 +19,52 @@ wss.on("connection",(ws)=>{
     
     ws.on("message",(data)=>{
         const DataRecieved=JSON.parse(data.toString());
-
+        // console.log(DataRecievedFormat);
+        
         if(DataRecieved.type === 'chat'){
-            Sockets.forEach((value,key)=>{
-                if(key !== UserId){
-                    console.log("recieves message ",data.toString());
-                    let messageToSend={
-                        type: "chat",
-                        msg: DataRecieved.value,
-                        Nickname: NameMap.get(UserId)
+            const DataRecievedFormat=DataRecieved.value.split(' ');
+            if(DataRecievedFormat[0] === "\\w"){
+                let userId;
+                for(let [key,value] of NameMap.entries()){
+                    if(value === DataRecievedFormat[1]){
+                        userId=key;
+                        break;
                     }
-                    value.send(JSON.stringify(messageToSend));
-                }else{
-                    let messageToSend={
-                        type: "chat",
-                        msg: DataRecieved.value,
-                        Nickname: 'Me'
-                    }
-                    value.send(JSON.stringify(messageToSend));
                 }
-            })
+                let messageToSend={
+                    type: "chat",
+                    msg: DataRecieved.value.slice(3,DataRecieved.value.length+1),
+                    Nickname: NameMap.get(userId) || "me2"
+                }
+                if(userId === undefined){
+                    const curruser=Sockets.get(UserId);
+                    messageToSend.msg="Not find any user with Nickname provided by you!";
+                    console.log("curruser ",curruser);
+                    curruser.send(JSON.stringify(messageToSend));
+                }else{
+                    const sender=Sockets.get(userId);
+                    sender.send(JSON.stringify(messageToSend));
+                }
+            }else{
+                Sockets.forEach((value,key)=>{
+                    if(key !== UserId){
+                        console.log("recieves message ",data.toString());
+                        let messageToSend={
+                            type: "chat",
+                            msg: DataRecieved.value,
+                            Nickname: NameMap.get(UserId)
+                        }
+                        value.send(JSON.stringify(messageToSend));
+                    }else{
+                        let messageToSend={
+                            type: "chat",
+                            msg: DataRecieved.value,
+                            Nickname: 'Me'
+                        }
+                        value.send(JSON.stringify(messageToSend));
+                    }
+                })
+            }
         }else if(DataRecieved.type === 'Nickname'){
             NameMap.set(UserId,DataRecieved.value);
             let onconnectionMessage={

@@ -3,6 +3,9 @@ import WebSocket from 'ws';
 const wss=new WebSocket.Server({port : 3000});
 const Sockets=new Map();
 const NameMap=new Map();
+let lastmsg=new Array();
+let msgInd=0;
+
 let currId=1;
 
 wss.on("connection",(ws)=>{
@@ -16,12 +19,23 @@ wss.on("connection",(ws)=>{
         type: "online",
         count: Sockets.size
     }
+
+    for(let i=msgInd%10;i<lastmsg.length;i++){
+        ws.send(JSON.stringify(lastmsg[i]));
+    }
+    for(let i=0;i<msgInd%10;i++){
+        ws.send(JSON.stringify(lastmsg[i]));
+    }
+    console.log(lastmsg);
+    console.log(msgInd);
+    
     
     ws.on("message",(data)=>{
         const DataRecieved=JSON.parse(data.toString());
-        // console.log(DataRecievedFormat);
         
         if(DataRecieved.type === 'chat'){
+
+            // Wisper logic
             const DataRecievedFormat=DataRecieved.value.split(' ');
             if(DataRecievedFormat[0] === "\\w"){
                 let userId;
@@ -46,6 +60,7 @@ wss.on("connection",(ws)=>{
                     sender.send(JSON.stringify(messageToSend));
                 }
             }else{
+                // Broadcast message
                 Sockets.forEach((value,key)=>{
                     if(key !== UserId){
                         console.log("recieves message ",data.toString());
@@ -56,10 +71,21 @@ wss.on("connection",(ws)=>{
                         }
                         value.send(JSON.stringify(messageToSend));
                     }else{
+                        // Sends back message to me
                         let messageToSend={
                             type: "chat",
                             msg: DataRecieved.value,
                             Nickname: 'Me'
+                        }
+
+                        // stores message in array
+                        if(lastmsg.length < 10){
+                            lastmsg.push({type: "last10",sender: NameMap.get(UserId),msg: DataRecieved.value});
+                            msgInd++;
+                        }else{
+                            let newInd = msgInd%10;
+                            lastmsg[newInd]=({type: "last10",sender: NameMap.get(UserId),msg: DataRecieved.value});
+                            msgInd++;
                         }
                         value.send(JSON.stringify(messageToSend));
                     }

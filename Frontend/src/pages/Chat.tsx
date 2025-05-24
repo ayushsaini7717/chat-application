@@ -20,6 +20,7 @@ function Chat() {
   const [ServerMsg,SetServerMsg]=useState<string[]>([]);
   const [currentTypeUser,SetCurrentTypeUser]=useState<string[]>([]);
   const [last10msg,Setlast10msg]=useState<lastmessageScheme[]>([]);
+  const [ActiveUsers,SetActiveUsers]=useState<string[]>([]);
   // const [isTyping,SetisTyping]=useState(false);
 
   const NicknameValue=useRecoilValue(NicknameAtom);
@@ -49,7 +50,8 @@ function Chat() {
       else if(parsedMessage.type === "chat"){
         Setmessage(prev=>[...prev,{msg: parsedMessage.msg,Nickname: parsedMessage.Nickname}]);
       }else if(parsedMessage.type === "info"){
-        SetServerMsg(prev=>[...prev,parsedMessage.msg])
+        SetServerMsg(prev=>[...prev,parsedMessage.msg]);
+        SetActiveUsers(parsedMessage.users);
       }else if(parsedMessage.type === "UserTyping"){
         if(parsedMessage.Istyping === true){
           SetCurrentTypeUser(prev => {
@@ -76,6 +78,13 @@ function Chat() {
   },[])
   return (
     <div>
+      <div>
+        Active Users:
+        {ActiveUsers.map((username)=>{
+          return <div key={username}>{username}</div>
+        })}
+      </div>
+      <br></br><br></br>
         <div>
            hii {NicknameValue}
           <h3>online: {online}</h3>

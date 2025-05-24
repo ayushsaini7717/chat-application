@@ -14,20 +14,19 @@ wss.on("connection",(ws)=>{
     const UserId=currId;
     currId++;
     ws.send(Sockets.size.toString());
-    
+
     let onlineStatus={
         type: "online",
-        count: Sockets.size
+        count: Sockets.size,
     }
 
+    // Sends last 10 messages to new user connected
     for(let i=msgInd%10;i<lastmsg.length;i++){
         ws.send(JSON.stringify(lastmsg[i]));
     }
     for(let i=0;i<msgInd%10;i++){
         ws.send(JSON.stringify(lastmsg[i]));
     }
-    console.log(lastmsg);
-    console.log(msgInd);
     
     
     ws.on("message",(data)=>{
@@ -96,12 +95,13 @@ wss.on("connection",(ws)=>{
             let onconnectionMessage={
                 type: "info",
                 msg: `${NameMap.get(UserId)} has joined the chat!`,
+                users: Array.from(NameMap.values())
             }
 
             Sockets.forEach((value,key)=>{
-                if(key !== UserId){
-                    value.send(JSON.stringify(onconnectionMessage));
-                }
+                // if(key !== UserId){
+                // }
+                value.send(JSON.stringify(onconnectionMessage));
                 value.send(JSON.stringify(onlineStatus));
             })
         }else if(DataRecieved.type === 'isTyping'){
@@ -120,18 +120,21 @@ wss.on("connection",(ws)=>{
     })
 
     ws.on("close",()=>{
+        console.log(`${NameMap.get(UserId)} disconnected!`);
+        let user=NameMap.get(UserId);
+        Sockets.delete(UserId);
+        NameMap.delete(UserId);
         let onDisconnetMessage={
             type: "info",
-            msg: `${NameMap.get(UserId)} has left the chat.`,
+            msg: `${user} has left the chat.`,
+            users: Array.from(NameMap.values())
         }
         Sockets.forEach((value,key)=>{
             if(key !== UserId){
                 value.send(JSON.stringify(onDisconnetMessage));
             }
+            onlineStatus.count=Sockets.size;
             value.send(JSON.stringify(onlineStatus));
         })
-        console.log(`${NameMap.get(UserId)} disconnected!`);
-        Sockets.delete(UserId);
-        NameMap.delete(UserId);
     })
 })

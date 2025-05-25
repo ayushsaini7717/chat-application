@@ -3,6 +3,7 @@ import WebSocket from 'ws';
 const wss=new WebSocket.Server({port : 3000});
 const Sockets=new Map();
 const NameMap=new Map();
+const Groups=new Map();
 let lastmsg=new Array();
 let msgInd=0;
 
@@ -12,6 +13,7 @@ wss.on("connection",(ws)=>{
     console.log(`user ${currId} connected!`);
     Sockets.set(currId,ws);
     const UserId=currId;
+    let Grouplink="";
     currId++;
     ws.send(Sockets.size.toString());
 
@@ -59,9 +61,11 @@ wss.on("connection",(ws)=>{
                     sender.send(JSON.stringify(messageToSend));
                 }
             }else{
-                // Broadcast message
+                // Broadcast message in group
+                let SocketsinGroup=Groups.get(DataRecieved.grouplink);
+                console.log("groups members are :",SocketsinGroup);
                 Sockets.forEach((value,key)=>{
-                    if(key !== UserId){
+                    if(SocketsinGroup instanceof Set && key !== UserId && SocketsinGroup.has(key)){
                         console.log("recieves message ",data.toString());
                         let messageToSend={
                             type: "chat",
@@ -69,7 +73,7 @@ wss.on("connection",(ws)=>{
                             Nickname: NameMap.get(UserId)
                         }
                         value.send(JSON.stringify(messageToSend));
-                    }else{
+                    }else if(SocketsinGroup.has(key)){
                         // Sends back message to me
                         let messageToSend={
                             type: "chat",
@@ -87,26 +91,41 @@ wss.on("connection",(ws)=>{
                             msgInd++;
                         }
                         value.send(JSON.stringify(messageToSend));
+                    }else{
+                        console.log(" Invalid group");
                     }
                 })
             }
         }else if(DataRecieved.type === 'Nickname'){
+            // add grouplink in set of Groups map
             NameMap.set(UserId,DataRecieved.value);
+            Grouplink=DataRecieved.grouplink;
+            if(!Groups.has(DataRecieved.grouplink)){
+                Groups.set(DataRecieved.grouplink,new Set());
+            }
+            Groups.get(DataRecieved.grouplink).add(currId-1);
+            let ActiveUsers: any[]=[];
+            Groups.get(Grouplink).forEach((id:number)=>{
+                ActiveUsers.push(NameMap.get(id));
+            })
             let onconnectionMessage={
                 type: "info",
                 msg: `${NameMap.get(UserId)} has joined the chat!`,
-                users: Array.from(NameMap.values())
+                users: ActiveUsers
             }
 
             Sockets.forEach((value,key)=>{
-                // if(key !== UserId){
-                // }
-                value.send(JSON.stringify(onconnectionMessage));
-                value.send(JSON.stringify(onlineStatus));
+                if(Groups.get(Grouplink).has(key)){
+                    value.send(JSON.stringify(onconnectionMessage));
+                    onlineStatus.count=Groups.get(Grouplink).size;
+                    // send online status
+                    value.send(JSON.stringify(onlineStatus));
+                }
             })
         }else if(DataRecieved.type === 'isTyping'){
+            let SocketsinGroup=Groups.get(DataRecieved.grouplink);
             Sockets.forEach((value,key)=>{
-                if(key !== UserId){
+                if(key !== UserId && SocketsinGroup.has(key)){
                     const TypingInfoSend={
                         type: "UserTyping",
                         name: NameMap.get(UserId),
@@ -124,6 +143,7 @@ wss.on("connection",(ws)=>{
         let user=NameMap.get(UserId);
         Sockets.delete(UserId);
         NameMap.delete(UserId);
+        Groups.get(Grouplink).delete(UserId);
         let onDisconnetMessage={
             type: "info",
             msg: `${user} has left the chat.`,
@@ -133,7 +153,8 @@ wss.on("connection",(ws)=>{
             if(key !== UserId){
                 value.send(JSON.stringify(onDisconnetMessage));
             }
-            onlineStatus.count=Sockets.size;
+            // send online status
+            onlineStatus.count=Groups.get(Grouplink).size;
             value.send(JSON.stringify(onlineStatus));
         })
     })

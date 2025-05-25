@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import NicknameAtom from "../atoms/NicknameAtom";
 import { useRecoilValue } from "recoil";
+import groupLinkAtom from "../atoms/groupLinkAtom";
 
 interface messagescheme{
   msg: string,
@@ -22,7 +23,9 @@ function Chat() {
   const [last10msg,Setlast10msg]=useState<lastmessageScheme[]>([]);
   const [ActiveUsers,SetActiveUsers]=useState<string[]>([]);
   // const [isTyping,SetisTyping]=useState(false);
-
+  
+  
+  const grouplink=useRecoilValue(groupLinkAtom);
   const NicknameValue=useRecoilValue(NicknameAtom);
   
   useEffect(()=>{
@@ -32,7 +35,8 @@ function Chat() {
     ws.onopen=()=>{
       const NicknameToSend={
         type: 'Nickname',
-        value: NicknameValue.toString()
+        value: NicknameValue.toString(),
+        grouplink:grouplink
       }
       ws.send(JSON.stringify(NicknameToSend));
       console.log("Connected to server!");
@@ -93,7 +97,8 @@ function Chat() {
             // SetisTyping(true);
             let TypingInfoSend={
               type: "isTyping",
-              value: true
+              value: true,
+              grouplink: grouplink
             }
             socket?.send(JSON.stringify(TypingInfoSend));
             setTimeout(()=>{
@@ -104,7 +109,8 @@ function Chat() {
           <button onClick={()=>{
             const DataToSend={
                 type: 'chat',
-                value: typemsg
+                value: typemsg,
+                grouplink: grouplink
             }
             socket?.send(JSON.stringify(DataToSend));
           }}>Send</button>

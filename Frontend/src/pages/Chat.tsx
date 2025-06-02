@@ -88,6 +88,7 @@ function Chat() {
           return <div key={username}>{username}</div>
         })}
       </div>
+      <div>share this code to your friends to join --{grouplink}</div>
       <br></br><br></br>
         <div>
            hii {NicknameValue}

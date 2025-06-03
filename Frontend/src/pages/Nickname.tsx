@@ -1,14 +1,12 @@
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import {  useSetRecoilState } from "recoil";
 import NicknameAtom from "../atoms/NicknameAtom";
 import groupLinkAtom from "../atoms/groupLinkAtom";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 const NickName=()=>{
     const setNickname=useSetRecoilState(NicknameAtom);
     const setgrouplink=useSetRecoilState(groupLinkAtom);
-    const [hidden,Sethidden]=useState(true);
 
     const navigate=useNavigate();
 
@@ -34,7 +32,6 @@ const NickName=()=>{
             className="w-48 bg-white text-black py-2 px-6 rounded-md font-semibold hover:bg-gray-200 transition"
             onClick={() => {
               setgrouplink(Math.random().toString(36).substring(2, 8));
-              Sethidden(false);
               navigate('/chat');
             }}
           >

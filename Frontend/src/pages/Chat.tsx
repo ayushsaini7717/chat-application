@@ -29,7 +29,8 @@ function Chat() {
   const NicknameValue=useRecoilValue(NicknameAtom);
   
   useEffect(()=>{
-    const ws=new WebSocket("ws://localhost:3000");
+    // const ws=new WebSocket("ws://localhost:3000");
+    const ws = new WebSocket('wss://chat-application-0gjv.onrender.com');
     setSocket(ws);
 
     ws.onopen=()=>{

@@ -4,8 +4,8 @@ const wss=new WebSocket.Server({port : 3000});
 const Sockets=new Map();
 const NameMap=new Map();
 const Groups=new Map();
-let lastmsg=new Array();
-let msgInd=0;
+const LastmsgMap=new Map();
+
 
 let currId=1;
 
@@ -23,12 +23,7 @@ wss.on("connection",(ws)=>{
     }
 
     // Sends last 10 messages to new user connected
-    for(let i=msgInd%10;i<lastmsg.length;i++){
-        ws.send(JSON.stringify(lastmsg[i]));
-    }
-    for(let i=0;i<msgInd%10;i++){
-        ws.send(JSON.stringify(lastmsg[i]));
-    }
+    
     
     
     ws.on("message",(data)=>{
@@ -62,7 +57,27 @@ wss.on("connection",(ws)=>{
                 }
             }else{
                 // Broadcast message in group
-                let SocketsinGroup=Groups.get(DataRecieved.grouplink);
+                let SocketsinGroup = Groups.get(DataRecieved.grouplink);
+                if (!SocketsinGroup) return; // Add group existence check
+                
+                // Store message for all group members
+                if (!LastmsgMap.has(DataRecieved.grouplink)) {
+                    LastmsgMap.set(DataRecieved.grouplink, []);
+                }
+                
+                const last10 = LastmsgMap.get(DataRecieved.grouplink);
+                const messageToStore = {
+                    type: "last10",
+                    sender: NameMap.get(UserId),
+                    msg: DataRecieved.value
+                };
+                
+                if (last10.length >= 10) {
+                    last10.shift(); // remove oldest message
+                }
+                last10.push(messageToStore); 
+
+                // let SocketsinGroup=Groups.get(DataRecieved.grouplink);
                 console.log("groups members are :",SocketsinGroup);
                 Sockets.forEach((value,key)=>{
                     if(SocketsinGroup instanceof Set && key !== UserId && SocketsinGroup.has(key)){
@@ -81,15 +96,7 @@ wss.on("connection",(ws)=>{
                             Nickname: 'Me'
                         }
 
-                        // stores message in array
-                        if(lastmsg.length < 10){
-                            lastmsg.push({type: "last10",sender: NameMap.get(UserId),msg: DataRecieved.value});
-                            msgInd++;
-                        }else{
-                            let newInd = msgInd%10;
-                            lastmsg[newInd]=({type: "last10",sender: NameMap.get(UserId),msg: DataRecieved.value});
-                            msgInd++;
-                        }
+                        
                         value.send(JSON.stringify(messageToSend));
                     }else{
                         console.log(" Invalid group");
@@ -100,9 +107,11 @@ wss.on("connection",(ws)=>{
             // add grouplink in set of Groups map
             NameMap.set(UserId,DataRecieved.value);
             Grouplink=DataRecieved.grouplink;
+            
             if(!Groups.has(DataRecieved.grouplink)){
                 Groups.set(DataRecieved.grouplink,new Set());
             }
+            
             Groups.get(DataRecieved.grouplink).add(currId-1);
             let ActiveUsers: any[]=[];
             Groups.get(Grouplink).forEach((id:number)=>{
@@ -112,6 +121,14 @@ wss.on("connection",(ws)=>{
                 type: "info",
                 msg: `${NameMap.get(UserId)} has joined the chat!`,
                 users: ActiveUsers
+            }
+
+            // create lastmessage groups
+            if (LastmsgMap.has(Grouplink)) {
+                const last10 = LastmsgMap.get(Grouplink);
+                last10.forEach((msg: any) => {
+                    ws.send(JSON.stringify(msg));
+                });
             }
 
             Sockets.forEach((value,key)=>{

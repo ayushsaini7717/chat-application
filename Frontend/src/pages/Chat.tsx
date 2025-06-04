@@ -83,107 +83,107 @@ function Chat() {
   },[])
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-900 text-white">
-    <div className="w-full md:w-72 bg-gray-800 p-4 flex flex-col justify-between max-h-[50vh] md:max-h-full overflow-y-auto">
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Share Code</h2>
-        <div className="bg-gray-700 p-2 rounded-md text-sm break-words mb-6">
-          {grouplink}
-        </div>
-  
-        <h3 className="text-md font-medium mb-2">Active Users</h3>
-        <div className="space-y-1 mb-6 max-h-40 overflow-y-auto">
-          {ActiveUsers.map((username) => (
-            <div key={username} className="py-1 px-2 bg-gray-700 rounded-md text-sm">
-              {username}
-            </div>
-          ))}
-        </div>
-  
-        <h4 className="text-md font-semibold mb-2">Server Messages</h4>
-        <div className="bg-gray-700 p-2 rounded-md text-sm space-y-1 max-h-40 overflow-y-auto">
-          {ServerMsg.length > 0 ? (
-            ServerMsg.map((item, i) => (
-              <div key={i} className="text-gray-300">
-                {i + 1} - {item}
-              </div>
-            ))
-          ) : (
-            <div className="text-gray-500">No server messages</div>
-          )}
-        </div>
+  <div className="w-full md:w-72 bg-gray-800 p-4 flex flex-col justify-between max-h-[50vh] md:max-h-full overflow-y-auto">
+    <div>
+      <h2 className="text-lg font-semibold mb-2">Share Code</h2>
+      <div className="bg-gray-700 p-2 rounded-md text-sm break-words mb-6">
+        {grouplink}
       </div>
-    </div>
-  
-    <div className="flex-1 flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700 text-center sm:text-left">
-        <h1 className="text-xl font-bold text-white">Hello, {NicknameValue}</h1>
-        <div className="text-sm text-gray-300 mt-2 sm:mt-0">Online: {online}</div>
-      </div>
-  
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
-        {last10msg.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-md font-semibold text-gray-300 mb-2">
-              Last 10 Messages
-            </h3>
-            {last10msg.map((item, i) => (
-              <div key={i} className="text-sm text-gray-200">
-                {item.sender} — {item.msg}
-              </div>
-            ))}
-          </div>
-        )}
-  
-        {currentTypeUser.map((item, i) => (
-          <div key={i} className="text-xs text-gray-400 italic">
-            {item} is typing...
+
+      <h3 className="text-md font-medium mb-2">Active Users</h3>
+      <div className="space-y-1 mb-6 max-h-40 overflow-y-auto">
+        {ActiveUsers.map((username) => (
+          <div key={username} className="py-1 px-2 bg-gray-700 rounded-md text-sm">
+            {username}
           </div>
         ))}
-  
-        <div>
-          <h3 className="text-md font-semibold text-gray-300 mb-2">Messages</h3>
-          {Message.map((item, i) => (
-            <div key={i} className="text-sm">
-              <span className="font-semibold text-blue-400">{item.Nickname}</span> — {item.msg}
+      </div>
+
+      <h4 className="text-md font-semibold mb-2">Server Messages</h4>
+      <div className="bg-gray-700 p-2 rounded-md text-sm space-y-1 max-h-40 overflow-y-auto">
+        {ServerMsg.length > 0 ? (
+          ServerMsg.map((item, i) => (
+            <div key={i} className="text-gray-300">
+              {i + 1} - {item}
+            </div>
+          ))
+        ) : (
+          <div className="text-gray-500">No server messages</div>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <div className="flex-1 flex flex-col">
+    <div className="flex flex-col sm:flex-row sm:justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700 text-center sm:text-left">
+      <h1 className="text-xl font-bold text-white">Hello, {NicknameValue}</h1>
+      <div className="text-sm text-gray-300 mt-2 sm:mt-0">Online: {online}</div>
+    </div>
+
+    <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
+      {last10msg.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-md font-semibold text-gray-300 mb-2">
+            Last 10 Messages
+          </h3>
+          {last10msg.map((item, i) => (
+            <div key={i} className="text-sm text-gray-200">
+              {item.sender} — {item.msg}
             </div>
           ))}
         </div>
+      )}
+
+      {currentTypeUser.map((item, i) => (
+        <div key={i} className="text-xs text-gray-400 italic">
+          {item} is typing...
+        </div>
+      ))}
+
+      <div>
+        <h3 className="text-md font-semibold text-gray-300 mb-2">Messages</h3>
+        {Message.map((item, i) => (
+          <div key={i} className="text-sm">
+            <span className="font-semibold text-blue-400">{item.Nickname}</span> — {item.msg}
+          </div>
+        ))}
       </div>
-  
-      <div className="px-4 py-4 bg-gray-800 border-t border-gray-700 flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
-        <input
-          value={typemsg}
-          type="text"
-          placeholder="Type your message..."
-          onChange={(e) => {
-            SetTypemsg(e.target.value);
-            const TypingInfoSend = {
-              type: "isTyping",
-              value: true,
+    </div>
+
+    <div className="px-4 py-4 bg-gray-800 border-t border-gray-700 flex flex-row items-center space-x-2">
+      <input
+        value={typemsg}
+        type="text"
+        placeholder="Type your message..."
+        onChange={(e) => {
+          SetTypemsg(e.target.value);
+          const TypingInfoSend = {
+            type: "isTyping",
+            value: true,
+            grouplink: grouplink,
+          };
+          socket?.send(JSON.stringify(TypingInfoSend));
+          setTimeout(() => {
+            TypingInfoSend.value = false;
+            socket?.send(JSON.stringify(TypingInfoSend));
+          }, 3000);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && typemsg.trim() !== "") {
+            const DataToSend = {
+              type: "chat",
+              value: typemsg,
               grouplink: grouplink,
             };
-            socket?.send(JSON.stringify(TypingInfoSend));
-            setTimeout(() => {
-              TypingInfoSend.value = false;
-              socket?.send(JSON.stringify(TypingInfoSend));
-            }, 3000);
-          }}
-
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && typemsg.trim() !== "") {
-              const DataToSend = {
-                type: "chat",
-                value: typemsg,
-                grouplink: grouplink,
-              };
-              socket?.send(JSON.stringify(DataToSend));
-              SetTypemsg(""); 
-            }
-          }}
-          className="w-full sm:flex-1 px-4 py-2 rounded-md bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={() => {
+            socket?.send(JSON.stringify(DataToSend));
+            SetTypemsg(""); 
+          }
+        }}
+        className="flex-grow px-4 py-2 rounded-md bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        onClick={() => {
+          if (typemsg.trim() !== "") {
             const DataToSend = {
               type: "chat",
               value: typemsg,
@@ -191,14 +191,16 @@ function Chat() {
             };
             socket?.send(JSON.stringify(DataToSend));
             SetTypemsg("");
-          }}
-          className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-md font-semibold"
-        >
-          Send
-        </button>
-      </div>
+          }
+        }}
+        className="shrink-0 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-md font-semibold"
+      >
+        Send
+      </button>
     </div>
   </div>
+</div>
+
   
 
 
